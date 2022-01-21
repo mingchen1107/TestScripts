@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ ${#} -ne 2 ]; then
+       echo "Error on execution: expected 2 arguments but received 1" 1>&2
+       exit 21
+fi
+
+for test in $(cat "$1"); do
+        if [ ! -r ${test}.in ]; then
+                echo "Error on execution: File is missing or unreadable" 1>&2
+                exit 21
+        fi
+
+        if [ -r ${test}.args ]; then
+			     $2 $(cat ${test}.args) < ${test}.in > ${test}.out
+		    else
+			     $2 < ${test}.in > ${test}.out
+		    fi
+done

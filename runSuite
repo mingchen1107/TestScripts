@@ -1,0 +1,40 @@
+#!/bin/bash 
+
+if [ ${#} -ne 2 ]; then
+    echo "Error on execution: expected 2 arguments but received 1" 1>&2
+    exit 21
+fi
+
+for test in $(cat $1); do
+	if [ ! -r ${test}.in -o ! -r ${test}.out ]; then
+		echo "Error on execution: File is missing or unreadable" 1>&2
+		exit 21
+	fi
+
+	tmpfile=$(mktemp /tmp/temporaryfile.XXXXX)
+	chmod a+rwx ${tmpfile}
+	
+	# Test for presence of arguments
+	if [ -r ${test}.args ]; then
+		$2 $(cat ${test}.args) < ${test}.in > ${tmpfile}
+	else 
+		$2 < ${test}.in > ${tmpfile}
+	fi
+
+	# Stores output in temporary file tmpfile 
+	# Deletes any output to stderr or stdout
+	diff ${tmpfile} ${test}.out > /dev/null 2>&1 
+		if [ ${?} -ne 0 ]; then
+			echo "Test failed: ${test}"
+            echo "Input:"
+       		cat ${test}.in
+       		echo "Expected:"
+       		cat ${test}.out
+			echo "Actual:"
+			cat ${tmpfile}	
+		fi
+	rm ${tmpfile}
+done
+
+
+
